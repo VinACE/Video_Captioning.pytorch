@@ -26,12 +26,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, opt.loglevel.upper()),
                         format='%(asctime)s:%(levelname)s: %(message)s')
 
-    logger.info(
-        'Input arguments: %s',
-        json.dumps(
-            vars(opt),
-            sort_keys=True,
-            indent=4))
+    logger.info('Input arguments: %s', json.dumps(vars(opt), sort_keys=True, indent=4))
 
     start = datetime.now()
 

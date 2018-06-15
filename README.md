@@ -11,10 +11,34 @@
 * Pytorch 0.2
 * [Microsoft COCO Caption Evaluation](https://github.com/tylin/coco-caption)
 * [CIDEr](https://github.com/plsang/cider)
+* torch, torchvision, numpy, scikit-image, nltk, h5py, pandas, future 
+* tensorboard_logger--for use tensorboard to view training loss
 
 (Check out the `coco-caption` and `cider` projects into your working directory)
 
 ## Data
+- VGG16 pretrained on ImageNet [PyTorch version]: https://download.pytorch.org/models/vgg16-397923af.pth
+- Resnet-101 pretrained on ImageNet [PyTorch version]: https://github.com/ruotianluo/pytorch-resnet
+- MSVD: https://www.microsoft.com/en-us/download/details.aspx?id=52422
+- MSR-VTT: http://ms-multimedia-challenge.com/2017/dataset
+- [Flickr30k](http://shannon.cs.illinois.edu/DenotationGraph/): flickr30k.tar.gz, flickr30k-images.tar
+
+**Obtain the dataset you need:**
+
+* [MSR-VTT](http://ms-multimedia-challenge.com/dataset):
+[train_val_videos.zip](http://202.38.69.241/static/resource/train_val_videos.zip),
+[train_val_annotation.zip](http://202.38.69.241/static/resource/train_val_annotation.zip),
+[test_videos.zip](http://202.38.69.241/static/resource/test_videos.zip),
+[test_videodatainfo.json](http://ms-multimedia-challenge.com/static/resource/test_videodatainfo.json)
+
+##### Processing
+###### Prepare video feature:
+```bash
+python video.py
+```
+
+
+##### Pre-processed
 
 Data can be downloaded [here](https://drive.google.com/drive/folders/1t65uYsDck6VV045GIaJXPIqL86vSGtyQ?usp=sharing) (643 MB). This folder contains: 
 * input/msrvtt: annotatated captions (note that `val_videodatainfo.json` is a symbolic link to `train_videodatainfo.json`)

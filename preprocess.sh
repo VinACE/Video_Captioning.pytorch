@@ -121,10 +121,65 @@ func_compute_evalscores()
     SPLIT="test"    && echo "pre-compute evaluation scores (BLEU_4, CIDEr, METEOR, ROUGE_L) "${SPLIT} && func_compute_evalscores_thread
 }
 
+func_extract_video_features()
+{
+    func_extract_resnet_ft_thread()
+    {
+        python compute_video_feats.py   --dataset ${DATASET} \
+                                        --type renset \
+                                        --feat_size 2048 \
+                                        --feat_h5 output/metadata/${DATASET}
+    }
+    func_extract_motion_ft_thread()
+    {
+        python compute_video_feats.py   --dataset ${DATASET} \
+                                        --type motion \
+                                        --feat_size 4096 \
+                                        --c3d_checkpoint ./datasets/models/c3d.pickle \
+                                        --feat_h5 output/metadata/${DATASET}
+    }
+    func_extract_audio_ft_thread()
+    {
+        python compute_video_feats.py   --dataset ${DATASET} \
+                                        --type motion \
+                                        --feat_size 4096 \
+                                        --c3d_checkpoint ./datasets/models/c3d.pickle \
+                                        --feat_h5 output/metadata/${DATASET}
+    }
+    func_extract_c3d_ft_thread()
+    {
+        python compute_video_feats.py   --dataset ${DATASET} \
+                                        --type motion \
+                                        --feat_size 4096 \
+                                        --c3d_checkpoint ./datasets/models/c3d.pickle \
+                                        --feat_h5 output/metadata/${DATASET}
+    }
+    func_extract_category_ft_thread()
+    {
+        python compute_video_feats.py   --dataset ${DATASET} \
+                                        --type motion \
+                                        --feat_size 4096 \
+                                        --c3d_checkpoint ./datasets/models/c3d.pickle \
+                                        --feat_h5 output/metadata/${DATASET}_resnet
+    }
+    DATASET="msrvtt"
+    func_extract_resnet_ft_thread
+    #func_extract_motion_ft_thread
+
+}
+
+##############################################################
+## Caption pre-processing
+##############################################################
 #func_standalize_format
 #func_preprocess_datainfo
 #func_build_vocab
 #func_create_sequencelabel
 #func_convert_datainfo2cocofmt
 #func_compute_ciderdf
-func_compute_evalscores
+#func_compute_evalscores
+
+##############################################################
+## Video pre-processing
+##############################################################
+func_extract_video_features

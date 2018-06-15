@@ -25,10 +25,8 @@ def prepro_captions(videos):
             logger.info("%d/%d video processed", i, len(videos))
 
         for caption in v['captions']:
-            caption_ascii = ''.join(
-                [ii if ord(ii) < 128 else '' for ii in caption])
-            tokens = str(caption_ascii).lower().translate(
-                None, string.punctuation).strip().split()
+            caption_ascii = ''.join([ii if ord(ii) < 128 else '' for ii in caption])
+            tokens = str(caption_ascii).lower().translate(None, string.punctuation).strip().split()
             v['processed_tokens'].append(tokens)
 
 

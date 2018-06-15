@@ -86,8 +86,7 @@ def main(vocab_json, captions_json, output_h5, max_length):
     with h5py.File(output_h5, 'w') as of:
         if len(videos[0]['captions']) > 0:
             logger.info('Encoding captions...')
-            L, label_start_ix, label_end_ix, label_length, label_to_video = encode_captions(
-                videos, max_length, wtoi)
+            L, label_start_ix, label_end_ix, label_length, label_to_video = encode_captions(videos, max_length, wtoi)
 
             of.create_dataset('labels', dtype=int, data=L)
             of.create_dataset('label_start_ix', dtype=int, data=label_start_ix)

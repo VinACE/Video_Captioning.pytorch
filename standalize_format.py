@@ -89,19 +89,16 @@ def standalize_msrvtt(
         # val2016 set
         logger.info('Loading val2016 info: %s', val2016_json)
         info2016 = json.load(open(val2016_json))
-        val2016_videos = [v for v in info2016[
-            'videos'] if v['split'] == 'validate']
+        val2016_videos = [v for v in info2016['videos'] if v['split'] == 'validate']
 
         val2016_video_dict = {v['video_id']: v['id'] for v in val2016_videos}
-        out['videos'] = [v for v in info['videos']
-                         if v['video_id'] not in val2016_video_dict]
+        out['videos'] = [v for v in info['videos'] if v['video_id'] not in val2016_video_dict]
 
     else:
         out['videos'] = [v for v in info['videos'] if v['split'] == split]
 
     tmp_dict = {v['video_id']: v['id'] for v in out['videos']}
-    out['captions'] = [{'id': c['sen_id'], 'video_id': tmp_dict[c['video_id']], 'caption': c[
-        'caption']} for c in info['sentences'] if c['video_id'] in tmp_dict]
+    out['captions'] = [{'id': c['sen_id'], 'video_id': tmp_dict[c['video_id']], 'caption': c['caption']} for c in info['sentences'] if c['video_id'] in tmp_dict]
 
     return out
 
@@ -113,11 +110,7 @@ def standalize_tvvtt(input_file, split='train2016'):
     Basically there is no split in the v2t dataset,
     Just consider each provided set as an independent dataset
     """
-    split_mapping = {
-        'train': 'train2016',
-        'val': 'test2016',
-        'test': 'test2017'
-    }
+    split_mapping = {'train': 'train2016', 'val': 'test2016', 'test': 'test2017'}
 
     split = split_mapping[split]
     logger.info('Loading file: %s, split: %s', input_file, split)

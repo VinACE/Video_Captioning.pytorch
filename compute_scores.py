@@ -56,12 +56,7 @@ if __name__ == "__main__":
     # scorer = CiderD(df=args.cached_tokens_file)
 
     logger.info('Setting up scorers...')
-    scorers = [
-        (Bleu(), "Bleu_4"),
-        (Meteor(), "METEOR"),
-        (Rouge(), "ROUGE_L"),
-        (Cider(), "CIDEr")
-    ]
+    scorers = [(Bleu(), "Bleu_4"), (Meteor(), "METEOR"), (Rouge(), "ROUGE_L"), (Cider(), "CIDEr")]
 
     logger.info('loading gt refs: %s', args.cocofmt_file)
     gt_refs = utils.load_gt_refs(args.cocofmt_file)

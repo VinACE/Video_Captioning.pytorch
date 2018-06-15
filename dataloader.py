@@ -116,8 +116,7 @@ class DataLoader():
                 assert ncap > 0, 'No captions!!'
 
                 seq = torch.LongTensor(self.seq_per_img, self.seq_length).zero_()
-                seq_all = torch.from_numpy(
-                    np.array(self.label_h5['labels'][ix1:ix2]))
+                seq_all = torch.from_numpy(np.array(self.label_h5['labels'][ix1:ix2]))
 
                 if ncap <= self.seq_per_img:
                     seq[:ncap] = seq_all[:ncap]
@@ -134,9 +133,7 @@ class DataLoader():
                 label_batch[il:il + self.seq_per_img] = seq
 
                 # Used for reward evaluation
-                gts.append(
-                    self.label_h5['labels'][
-                    self.label_start_ix[idx]: self.label_end_ix[idx]])
+                gts.append(self.label_h5['labels'][self.label_start_ix[idx]: self.label_end_ix[idx]])
 
                 # pre-computed cider scores, 
                 # assuming now that videos order are same (which is the sorted videos order)
@@ -157,8 +154,7 @@ class DataLoader():
 
         if self.has_label:
             # + 1 here to count the <eos> token, because the <eos> token is set to 0
-            nonzeros = np.array(
-                list(map(lambda x: (x != 0).sum() + 1, label_batch)))
+            nonzeros = np.array(list(map(lambda x: (x != 0).sum() + 1, label_batch)))
             for ix, row in enumerate(mask_batch):
                 row[:nonzeros[ix]] = 1
 

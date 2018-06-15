@@ -63,8 +63,7 @@ def compute_doc_freq(crefs):
     document_frequency = defaultdict(float)
     for refs in crefs:
         # refs, k ref captions of one image
-        for ngram in set([ngram for ref in refs for (
-                ngram, count) in ref.iteritems()]):
+        for ngram in set([ngram for ref in refs for (ngram, count) in ref.iteritems()]):
             document_frequency[ngram] += 1
             # maxcounts[ngram] = max(maxcounts.get(ngram,0), count)
     return document_frequency
@@ -118,14 +117,12 @@ def main(vocab_json, captions_json, output_pkl, save_words=False):
     ngram_words, ngram_idxs, ref_len = build_dict(videos, wtoi)
 
     logger.info('Saving index to: %s', output_pkl)
-    cPickle.dump({'document_frequency': ngram_idxs, 'ref_len': ref_len}, open(
-        output_pkl, 'w'), protocol=cPickle.HIGHEST_PROTOCOL)
+    cPickle.dump({'document_frequency': ngram_idxs, 'ref_len': ref_len}, open(output_pkl, 'w'), protocol=cPickle.HIGHEST_PROTOCOL)
 
     if save_words:
         output_file = output_pkl.replace('.pkl', '_words.pkl', 1)
         logger.info('Saving word to: %s', output_file)
-        cPickle.dump({'document_frequency': ngram_words, 'ref_len': ref_len}, open(
-            output_file, 'w'), protocol=cPickle.HIGHEST_PROTOCOL)
+        cPickle.dump({'document_frequency': ngram_words, 'ref_len': ref_len}, open(output_file, 'w'), protocol=cPickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":
@@ -143,10 +140,6 @@ if __name__ == "__main__":
 
     start = datetime.now()
 
-    main(
-        args.vocab_json,
-        args.captions_json,
-        args.output_pkl,
-        save_words=args.output_words)
+    main(args.vocab_json, args.captions_json, args.output_pkl, save_words=args.output_words)
 
     logger.info('Time: %s', datetime.now() - start)
