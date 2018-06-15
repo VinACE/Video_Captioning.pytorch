@@ -11,11 +11,11 @@ import cPickle
 
 import logging
 from datetime import datetime
+
 logger = logging.getLogger(__name__)
 
 
 class DataLoader():
-
     """Class to load video features and captions"""
 
     def __init__(self, opt):
@@ -49,6 +49,7 @@ class DataLoader():
         self.feat_h5 = []
         self.feat_dims = []
         for ii, feat_h5_file in enumerate(feat_h5_files):
+            print("Loading feature file from {}".format(feat_h5_file))
             self.feat_h5.append(h5py.File(feat_h5_files[ii], 'r'))
             self.feat_dims.append(self.feat_h5[ii][self.videos[0]].shape[0])
 
@@ -62,7 +63,7 @@ class DataLoader():
             # load the pointers in full to RAM (should be small enough)
             self.label_start_ix = self.label_h5['label_start_ix']
             self.label_end_ix = self.label_h5['label_end_ix']
-            assert(self.label_start_ix.shape[0] == self.label_end_ix.shape[0])
+            assert (self.label_start_ix.shape[0] == self.label_end_ix.shape[0])
             self.has_label = True
         else:
             self.has_label = False
@@ -74,7 +75,7 @@ class DataLoader():
             if eval_metric == 'CIDEr' and eval_metric not in self.bcmrscores:
                 eval_metric = 'cider'
             self.bcmrscores = self.bcmrscores[eval_metric]
-            
+
         if self.mode == 'train':
             self.shuffle_videos()
 
@@ -86,31 +87,26 @@ class DataLoader():
     def get_batch(self):
 
         video_batch = []
+
         for dim in self.feat_dims:
-            feat = torch.FloatTensor(
-                self.batch_size, self.num_chunks, dim).zero_()
+            feat = torch.FloatTensor(self.batch_size, self.num_chunks, dim).zero_()
             video_batch.append(feat)
 
         if self.has_label:
-            label_batch = torch.LongTensor(
-                self.batch_size * self.seq_per_img,
-                self.seq_length).zero_()
-            mask_batch = torch.FloatTensor(
-                self.batch_size * self.seq_per_img,
-                self.seq_length).zero_()
+            label_batch = torch.LongTensor(self.batch_size * self.seq_per_img, self.seq_length).zero_()
+            mask_batch = torch.FloatTensor(self.batch_size * self.seq_per_img, self.seq_length).zero_()
 
         videoids_batch = []
         gts = []
         bcmrscores = np.zeros((self.batch_size, self.seq_per_img)) if self.bcmrscores_pkl is not None else None
-        
+
         for ii in range(self.batch_size):
             idx = self.index[self.iterator]
             video_id = int(self.videos[idx])
             videoids_batch.append(video_id)
 
             for jj in range(self.num_feats):
-                video_batch[jj][ii] = torch.from_numpy(
-                    np.array(self.feat_h5[jj][str(video_id)]))
+                video_batch[jj][ii] = torch.from_numpy(np.array(self.feat_h5[jj][str(video_id)]))
 
             if self.has_label:
                 # fetch the sequence labels
@@ -119,8 +115,7 @@ class DataLoader():
                 ncap = ix2 - ix1  # number of captions available for this image
                 assert ncap > 0, 'No captions!!'
 
-                seq = torch.LongTensor(
-                    self.seq_per_img, self.seq_length).zero_()
+                seq = torch.LongTensor(self.seq_per_img, self.seq_length).zero_()
                 seq_all = torch.from_numpy(
                     np.array(self.label_h5['labels'][ix1:ix2]))
 
@@ -141,13 +136,13 @@ class DataLoader():
                 # Used for reward evaluation
                 gts.append(
                     self.label_h5['labels'][
-                        self.label_start_ix[idx]: self.label_end_ix[idx]])
+                    self.label_start_ix[idx]: self.label_end_ix[idx]])
 
                 # pre-computed cider scores, 
                 # assuming now that videos order are same (which is the sorted videos order)
                 if self.bcmrscores_pkl is not None:
                     bcmrscores[ii] = self.bcmrscores[idx]
-                    
+
             self.iterator += 1
             if self.iterator >= self.num_videos:
                 logger.info('===> Finished loading epoch %d', self.epoch)

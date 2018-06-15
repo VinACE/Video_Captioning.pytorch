@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 def prepro_captions(videos):
-
     logger.info("Preprocessing %d videos", len(videos))
     for i, v in enumerate(videos):
         v['processed_tokens'] = []
@@ -34,7 +33,6 @@ def prepro_captions(videos):
 
 
 def main(input_json, output_json):
-
     infos = json.load(open(input_json, 'r'))
     annots = infos['captions']
 
@@ -64,17 +62,14 @@ def main(input_json, output_json):
     logger.info('Writing to: %s', output_json)
     json.dump(videos, open(output_json, 'w'))
 
+
 ######################################################################
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s:%(levelname)s: %(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s: %(message)s')
     parser = argparse.ArgumentParser()
-
-    parser.add_argument('input_json', type=str,
-                        help='standalized input json')
-    parser.add_argument(
-        'output_json', type=str, help='output tokenized json file')
+    parser.add_argument('--input_json', type=str, help='standalized input json')
+    parser.add_argument('--output_json', type=str, help='output tokenized json file')
 
     args = parser.parse_args()
     logger.info('Input arguments: %s', args)

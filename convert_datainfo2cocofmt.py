@@ -13,6 +13,7 @@ import random
 
 logger = logging.getLogger(__name__)
 
+
 # remove non-accii characters
 
 
@@ -20,29 +21,15 @@ def remove_nonaccii(s):
     s = ''.join([i if ord(i) < 128 else '' for i in s])
     return s
 
+
 if __name__ == '__main__':
     start = datetime.now()
 
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s:%(levelname)s: %(message)s')
-
-    argparser = argparse.ArgumentParser(
-        description="Prepare image input in Json format for neuraltalk extraction and visualization")
-    argparser.add_argument(
-        "input_json",
-        type=str,
-        help="Standalized datainfo file")
-    argparser.add_argument(
-        "output_json",
-        type=str,
-        help="Output json in COCO format")
-    argparser.add_argument(
-        "--max_caption",
-        type=int,
-        help="Max number of caption per video; default: 0 (all captions)",
-        default=0)
-
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s: %(message)s')
+    argparser = argparse.ArgumentParser(description="Prepare image input in Json format for neuraltalk extraction and visualization")
+    argparser.add_argument("--input_json", type=str, help="Standalized datainfo file")
+    argparser.add_argument("--output_json", type=str, help="Output json in COCO format")
+    argparser.add_argument("--max_caption", type=int, help="Max number of caption per video; default: 0 (all captions)", default=0)
     args = argparser.parse_args()
 
     logger.info('Loading input file: %s', args.input_json)

@@ -22,7 +22,6 @@ __EOS_TOKEN = '<end>'
 
 
 def build_vocab(videos, word_count_threshold):
-
     # count up the number of words
     counter = Counter()
     for v in videos:
@@ -62,7 +61,6 @@ def build_vocab(videos, word_count_threshold):
 
 
 def main(input_json, output_json, word_count_threshold):
-
     videos = json.load(open(input_json, 'r'))
 
     logger.info('Creating the vocab')
@@ -71,6 +69,7 @@ def main(input_json, output_json, word_count_threshold):
     logger.info('Writing to %s', output_json)
     json.dump(vocab, open(output_json, 'w'))
 
+
 ######################################################################
 
 if __name__ == "__main__":
@@ -78,16 +77,9 @@ if __name__ == "__main__":
                         format='%(asctime)s:%(levelname)s: %(message)s')
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('input_json', type=str,
-                        help='%_proprocessedtokens.json')
-    parser.add_argument(
-        'output_json', default='_vocab.json', help='output vocab file')
-
-    parser.add_argument(
-        '--word_count_threshold',
-        default=0,
-        type=int,
-        help='only words that occur no less than this number of times will be put in vocab')
+    parser.add_argument('--input_json', type=str, help='%_proprocessedtokens.json')
+    parser.add_argument('--output_json', default='_vocab.json', help='output vocab file')
+    parser.add_argument('--word_count_threshold', default=0, type=int, help='only words that occur no less than this number of times will be put in vocab')
 
     args = parser.parse_args()
     logger.info('Input parameters: %s', args)

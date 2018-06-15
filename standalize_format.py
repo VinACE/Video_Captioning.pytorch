@@ -140,45 +140,25 @@ def standalize_tvvtt(input_file, split='train2016'):
 
     return out
 
+
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s:%(levelname)s: %(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s: %(message)s')
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('input_file', type=str, help='')
-    parser.add_argument('output_json', type=str, help='')
+    parser.add_argument('--input_file', type=str, help='')
+    parser.add_argument('--output_json', type=str, help='')
     parser.add_argument('--split', type=str, help='')
-    parser.add_argument(
-        '--dataset',
-        type=str,
-        default='yt2t',
-        choices=[
-            'yt2t',
-            'msrvtt2016',
-            'msrvtt2017',
-            'tvvtt'],
-        help='Choose dataset')
-    parser.add_argument(
-        '--val2016_json',
-        type=str,
-        help='use valset from msrvtt2016 contest')
-
+    parser.add_argument('--dataset', type=str, default='yt2t', choices=['yt2t', 'msrvtt2016', 'msrvtt2017', 'tvvtt'], help='Choose dataset')
+    parser.add_argument('--val2016_json', type=str, help='use valset from msrvtt2016 contest')
     args = parser.parse_args()
     logger.info('Input arguments: %s', args)
 
     start = datetime.now()
 
     if args.dataset == 'msrvtt2016':
-        out = standalize_msrvtt(
-            args.input_file,
-            dataset=args.dataset,
-            split=args.split)
+        out = standalize_msrvtt(args.input_file, dataset=args.dataset, split=args.split)
     elif args.dataset == 'msrvtt2017':
-        out = standalize_msrvtt(
-            args.input_file,
-            dataset=args.dataset,
-            split=args.split,
-            val2016_json=args.val2016_json)
+        out = standalize_msrvtt(args.input_file, dataset=args.dataset, split=args.split, val2016_json=args.val2016_json)
     elif args.dataset == 'yt2t':
         out = standalize_yt2t(args.input_file)
     elif args.dataset == 'tvvtt':
@@ -188,7 +168,7 @@ if __name__ == "__main__":
 
     if not os.path.exists(os.path.dirname(args.output_json)):
         os.makedirs(os.path.dirname(args.output_json))
-        
+
     with open(args.output_json, 'w') as of:
         json.dump(out, of)
 

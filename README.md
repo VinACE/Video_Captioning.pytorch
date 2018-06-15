@@ -1,6 +1,8 @@
 # Consensus-based Sequence Training for Video Captioning #
 
-Code for the video captioning methods from ["Consensus-based Sequence Training for Video Captioning" (Phan, Henter, Miyao, Satoh. 2017)](https://arxiv.org/abs/1712.09532).
+## TODO list
+- [ ] Preprocessing code
+- [ ] Model ensemble
 
 ## Dependencies ###
 
@@ -81,23 +83,9 @@ make train GID=0 MODEL_TYPE=concat EXP_NAME=CST_MS_SCBSTAR FEATS="resnet c3d mfc
 
 If you want to change the input features, modify the `FEATS` variable in above commands.
 
-## Reference
-
-    @article{cst_phan2017,
-        author = {Sang Phan and Gustav Eje Henter and Yusuke Miyao and Shin'ichi Satoh},
-        title = {Consensus-based Sequence Training for Video Captioning},
-        journal = {ArXiv e-prints},
-        archivePrefix = "arXiv",
-        eprint = {1712.09532},
-        year = {2017},
-    }
-    
-## Todo 
-
-* Test on Youtube2Text dataset (different number of captions per video)
-
 ### Acknowledgements ###
 
 * Torch implementation of [NeuralTalk2](https://github.com/karpathy/neuraltalk2)
 * PyTorch implementation of Self-critical Sequence Training for Image Captioning [(SCST)](https://github.com/ruotianluo/self-critical.pytorch)
 * PyTorch Team
+* ["Consensus-based Sequence Training for Video Captioning" (Phan, Henter, Miyao, Satoh. 2017)](https://arxiv.org/abs/1712.09532).

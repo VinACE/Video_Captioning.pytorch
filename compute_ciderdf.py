@@ -71,7 +71,6 @@ def compute_doc_freq(crefs):
 
 
 def build_dict(videos, wtoi):
-
     count_videos = 0
 
     refs_words = []
@@ -94,7 +93,6 @@ def build_dict(videos, wtoi):
 
 
 def main(vocab_json, captions_json, output_pkl, save_words=False):
-
     logger.info('Loading: %s', captions_json)
     videos = json.load(open(captions_json))
 
@@ -129,27 +127,18 @@ def main(vocab_json, captions_json, output_pkl, save_words=False):
         cPickle.dump({'document_frequency': ngram_words, 'ref_len': ref_len}, open(
             output_file, 'w'), protocol=cPickle.HIGHEST_PROTOCOL)
 
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s:%(levelname)s: %(message)s')
     parser = argparse.ArgumentParser()
 
     # input json
-    parser.add_argument('captions_json', default='_proprocessedtokens',
-                        help='_proprocessedtokens json file')
-    parser.add_argument(
-        'output_pkl',
-        default='_pkl',
-        help='save idx frequencies')
+    parser.add_argument('--captions_json', default='_proprocessedtokens', help='_proprocessedtokens json file')
+    parser.add_argument('--output_pkl', default='_pkl', help='save idx frequencies')
+    parser.add_argument('--output_words', action='store_true', help='optionally saving word frequencies')
+    parser.add_argument('--vocab_json', default=None, help='vocab json file')
 
-    parser.add_argument(
-        '--output_words',
-        action='store_true',
-        help='optionally saving word frequencies')
-
-    parser.add_argument('--vocab_json', default=None,
-                        help='vocab json file')
-    
     args = parser.parse_args()
 
     start = datetime.now()
