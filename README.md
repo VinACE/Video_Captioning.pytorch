@@ -1,7 +1,8 @@
 # Consensus-based Sequence Training for Video Captioning #
 
 ## TODO list
-- [ ] Preprocessing code
+- [x] Preprocessing code [Textual part]
+- [ ] Preprocessing code [Visual part]
 - [ ] Model ensemble
 
 ## Dependencies ###
@@ -27,25 +28,22 @@ Extract video features
 
 Generate metadata
 
+1. run `func_standalize_format`
+2. run `func_preprocess_datainfo`
+3. run `func_build_vocab`
+4. run `func_create_sequencelabel`
+5. run `func_convert_datainfo2cocofmt`
+6. run `func_compute_ciderdf` # Pre-compute document frequency for CIDEr computation
+7. run `func_compute_evalscores` # Pre-compute evaluation scores (BLEU_4, CIDEr, METEOR, ROUGE_L) for each caption
+
+### Train
 ```bash
-make pre_process
+./train.sh 0 [GPUIDs]
 ```
-
-Pre-compute document frequency for CIDEr computation
-```bash
-make compute_ciderdf
-```
-
-Pre-compute evaluation scores (BLEU_4, CIDEr, METEOR, ROUGE_L) for each caption
-```bash
-make compute_evalscores
-```
-
-## Train/Test ###
+### Test
 
 ```bash
-make train [options]
-make test [options]
+./test.sh 0 [GPUIDs]
 ```
 
 Please refer to the Makefile (and opts.py file) for the set of available train/test options
