@@ -1,9 +1,9 @@
-# Consensus-based Sequence Training for Video Captioning #
+# Video Captioning
 
 ## TODO list
 - [x] Preprocessing code [Textual part]
 - [ ] Preprocessing code [Visual part]
-- [ ] Model ensemble
+- [ ] Model ensembling
 
 ## Dependencies ###
 
@@ -36,52 +36,45 @@ Generate metadata
 6. run `func_compute_ciderdf` # Pre-compute document frequency for CIDEr computation
 7. run `func_compute_evalscores` # Pre-compute evaluation scores (BLEU_4, CIDEr, METEOR, ROUGE_L) for each caption
 
-### Train
+
+Please refer to the `opts.py` file for the set of available train/test options
+
+### Training
+
 ```bash
+# Train XE model
 ./train.sh 0 [GPUIDs]
 ```
-### Test
+
+```bash
+# Train CST_GT_None/WXE model
+./train.sh 1 [GPUIDs]
+```
+
+```bash
+# Train CST_MS_Greedy model (using greedy baseline)
+./train.sh 2 [GPUIDs]
+```
+
+```bash
+# Train CST_MS_SCB model (using SCB baseline, where SCB is computed from GT captions)
+./train.sh 3 [GPUIDs]
+```
+
+
+
+```bash
+#Train CST_MS_SCB(*) model (using SCB baseline, where SCB is computed from model sampled captions)
+./train.sh 4 [GPUIDs]
+```
+
+### Testing
 
 ```bash
 ./test.sh 0 [GPUIDs]
 ```
 
-Please refer to the Makefile (and opts.py file) for the set of available train/test options
-
-## Examples
-
-Train XE model
-```bash
-make train GID=0 EXP_NAME=xe FEATS="resnet c3d mfcc category" USE_RL=0 USE_CST=0 USE_MIXER=0 SCB_CAPTIONS=0 LOGLEVEL=DEBUG MAX_EPOCHS=50
-```
-
-Train CST_GT_None/WXE model
-
-```bash
-make train GID=0 EXP_NAME=WXE FEATS="resnet c3d mfcc category" USE_RL=1 USE_CST=1 USE_MIXER=0 SCB_CAPTIONS=0 LOGLEVEL=DEBUG MAX_EPOCHS=50
-```
-
-Train CST_MS_Greedy model (using greedy baseline)
-
-```bash
-make train GID=0 EXP_NAME=CST_MS_Greedy FEATS="resnet c3d mfcc category" USE_RL=1 USE_CST=0 SCB_CAPTIONS=0 USE_MIXER=1 MIXER_FROM=1 USE_EOS=1 LOGLEVEL=DEBUG MAX_EPOCHS=200 START_FROM=output/model/WXE
-```
-
-Train CST_MS_SCB model (using SCB baseline, where SCB is computed from GT captions)
-
-```
-make train GID=0 EXP_NAME=CST_MS_SCB FEATS="resnet c3d mfcc category" USE_RL=1 USE_CST=1 USE_MIXER=1 MIXER_FROM=1 SCB_BASELINE=1 SCB_CAPTIONS=20 USE_EOS=1 LOGLEVEL=DEBUG MAX_EPOCHS=200 START_FROM=output/model/WXE
-```
-
-Train CST_MS_SCB(*) model (using SCB baseline, where SCB is computed from model sampled captions)
-
-```
-make train GID=0 MODEL_TYPE=concat EXP_NAME=CST_MS_SCBSTAR FEATS="resnet c3d mfcc category" USE_RL=1 USE_CST=1 USE_MIXER=1 MIXER_FROM=1 SCB_BASELINE=2 SCB_CAPTIONS=20 USE_EOS=1 LOGLEVEL=DEBUG MAX_EPOCHS=200 START_FROM=output/model/WXE
-```
-
-If you want to change the input features, modify the `FEATS` variable in above commands.
-
-### Acknowledgements ###
+## Acknowledgements
 
 * Torch implementation of [NeuralTalk2](https://github.com/karpathy/neuraltalk2)
 * PyTorch implementation of Self-critical Sequence Training for Image Captioning [(SCST)](https://github.com/ruotianluo/self-critical.pytorch)
