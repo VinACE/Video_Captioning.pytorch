@@ -58,6 +58,9 @@ Please refer to the `opts.py` file for the set of available train/test options
 ./train.sh 0 [GPUIDs]
 ```
 
+##### Currently, the c3d feature seems not working (orange), but resnet and audio works and category features seems useless.
+![](output/curve.png)
+
 ```bash
 # Train CST_GT_None/WXE model
 ./train.sh 1 [GPUIDs]
