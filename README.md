@@ -1,10 +1,5 @@
 # Video Captioning
 
-## TODO list
-- [x] Preprocessing code [Textual part]
-- [ ] Preprocessing code [Visual part]
-- [ ] Model ensembling
-
 ## Dependencies ###
 
 * Python 2.7
@@ -31,13 +26,6 @@
 [test_videos.zip](http://202.38.69.241/static/resource/test_videos.zip),
 [test_videodatainfo.json](http://ms-multimedia-challenge.com/static/resource/test_videodatainfo.json)
 
-##### Processing
-###### Prepare video feature:
-```bash
-python video.py
-```
-
-
 ##### Pre-processed
 
 Data can be downloaded [here](https://drive.google.com/drive/folders/1t65uYsDck6VV045GIaJXPIqL86vSGtyQ?usp=sharing) (643 MB). This folder contains: 
@@ -59,7 +47,7 @@ Generate metadata
 5. run `func_convert_datainfo2cocofmt`
 6. run `func_compute_ciderdf` # Pre-compute document frequency for CIDEr computation
 7. run `func_compute_evalscores` # Pre-compute evaluation scores (BLEU_4, CIDEr, METEOR, ROUGE_L) for each caption
-
+8. run `func_extract_video_features` # extract video features
 
 Please refer to the `opts.py` file for the set of available train/test options
 

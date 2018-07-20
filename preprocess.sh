@@ -125,49 +125,49 @@ func_extract_video_features()
 {
     func_extract_resnet_ft_thread()
     {
-        python compute_video_feats.py   --dataset ${DATASET} \
-                                        --type renset \
-                                        --feat_size 2048 \
-                                        --feat_h5 output/metadata/${DATASET}
+        CUDA_VISIBLE_DEVICES=$GPU_ID python compute_video_feats.py      --dataset ${DATASET} \
+                                                                        --type resnet \
+                                                                        --feat_size 2048 \
+                                                                        --feat_h5 output/metadata/${DATASET}
     }
     func_extract_motion_ft_thread()
     {
-        python compute_video_feats.py   --dataset ${DATASET} \
-                                        --type motion \
-                                        --feat_size 4096 \
-                                        --c3d_checkpoint ./datasets/models/c3d.pickle \
-                                        --feat_h5 output/metadata/${DATASET}
+        CUDA_VISIBLE_DEVICES=$GPU_ID  python compute_video_feats.py     --dataset ${DATASET} \
+                                                                        --type motion \
+                                                                        --feat_size 4096 \
+                                                                        --feat_h5 output/metadata/${DATASET}
     }
     func_extract_audio_ft_thread()
     {
-        python compute_video_feats.py   --dataset ${DATASET} \
-                                        --type motion \
-                                        --feat_size 4096 \
-                                        --c3d_checkpoint ./datasets/models/c3d.pickle \
-                                        --feat_h5 output/metadata/${DATASET}
+        CUDA_VISIBLE_DEVICES=$GPU_ID  python compute_video_feats.py     --dataset ${DATASET} \
+                                                                        --type audio \
+                                                                        --feat_size 128 \
+                                                                        --feat_h5 output/metadata/${DATASET}
     }
     func_extract_c3d_ft_thread()
     {
-        python compute_video_feats.py   --dataset ${DATASET} \
-                                        --type motion \
-                                        --feat_size 4096 \
-                                        --c3d_checkpoint ./datasets/models/c3d.pickle \
-                                        --feat_h5 output/metadata/${DATASET}
+        CUDA_VISIBLE_DEVICES=$GPU_ID  python compute_video_feats.py     --dataset ${DATASET} \
+                                                                        --type c3d \
+                                                                        --feat_size 4096 \
+                                                                        --c3d_checkpoint misc/encoder/c3d.pickle \
+                                                                        --feat_h5 output/metadata/${DATASET}
     }
     func_extract_category_ft_thread()
     {
-        python compute_video_feats.py   --dataset ${DATASET} \
-                                        --type motion \
-                                        --feat_size 4096 \
-                                        --c3d_checkpoint ./datasets/models/c3d.pickle \
-                                        --feat_h5 output/metadata/${DATASET}_resnet
+        CUDA_VISIBLE_DEVICES=$GPU_ID  python compute_video_feats.py     --dataset ${DATASET} \
+                                                                        --type motion \
+                                                                        --feat_size 4096 \
+                                                                        --feat_h5 output/metadata/${DATASET}_resnet
     }
     DATASET="msrvtt"
-    func_extract_resnet_ft_thread
+    #func_extract_resnet_ft_thread
     #func_extract_motion_ft_thread
-
+    func_extract_c3d_ft_thread
+    #func_extract_audio_ft_thread
 }
 
+
+GPU_ID=$1
 ##############################################################
 ## Caption pre-processing
 ##############################################################

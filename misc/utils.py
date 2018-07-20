@@ -286,3 +286,14 @@ def record_summary(tf_summary_writer, uidx, t2i, i2t):
         add_summary_value(tf_summary_writer, k, v, uidx)
     for k, v in i2t.items():
         add_summary_value(tf_summary_writer, k, v, uidx)
+
+def build_msrvtt_videos():
+    root_dir = os.getcwd()
+    raw_dirs = [root_dir + '/datasets/msrvtt/TrainValVideo', root_dir + '/datasets/msrvtt/TestVideo']
+    new_dir = 'datasets/msrvtt/videos'
+    for raw_dir in raw_dirs:
+        videos = sorted(os.listdir(raw_dir))
+        for video in videos:
+            raw_video_name = raw_dir + '/' + video
+            id_video_name = new_dir+ '/' + video
+            os.system('ln -s '+ ' '+raw_video_name + ' '+id_video_name)

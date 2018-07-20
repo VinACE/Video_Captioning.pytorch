@@ -35,11 +35,11 @@ def download_and_process_video(save_path, row):
         ipdb.set_trace()
     video.download('.')
  
-    cap = cv.VideoCapture( 'tmp.mp4' )
-    fps = cap.get(cv.CV_CAP_PROP_FPS)
-    fourcc = int(cap.get(cv.CV_FOURCC(*'XVID')))
-    w = int(cap.get(cv.CV_CAP_PROP_FRAME_WIDTH))
-    h = int(cap.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
+    cap = cv2.VideoCapture( 'tmp.mp4' )
+    fps = cap.get(cv2.CV_CAP_PROP_FPS)
+    fourcc = int(cap.get(cv2.CV_FOURCC(*'XVID')))
+    w = int(cap.get(cv2.CV_CAP_PROP_FRAME_WIDTH))
+    h = int(cap.get(cv2.CV_CAP_PROP_FRAME_HEIGHT))
  
     out = cv2.VideoWriter( full_path, fourcc, fps, (w,h))
  

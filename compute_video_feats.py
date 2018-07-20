@@ -17,11 +17,13 @@ import numpy as np
 import skimage
 import torch
 from tqdm import tqdm
+from skimage.transform import resize
 from torch.autograd import Variable
 from torchvision import transforms as trn
 from misc.encoder.AppearanceEncoder import *
 from misc.encoder.MotionEncoder import *
 from misc.utils import *
+from misc.encoder.C3D import *
 
 preprocess = trn.Compose([
     # trn.ToTensor(),
@@ -32,7 +34,7 @@ def parse_opt():
     parser = argparse.ArgumentParser()
     # General
     parser.add_argument('--dataset', type=str, default='msrvtt')
-    parser.add_argument('--type', type=str, default='renset', help="[renset, motion, audio, category, c3d]")
+    parser.add_argument('--type', type=str, default='c3d', help="[renset, motion, audio, category, c3d]")
     parser.add_argument('--frame_size', type=int, default=224)   # Frame size
     # Frame
     parser.add_argument('--feat_size', type=int, default=4096) # Frame feature
@@ -43,25 +45,25 @@ def parse_opt():
     parser.add_argument('--resnet_checkpoint', type=str, default='./misc/encoder/pytorch-resnet/resnet101.pth')
     parser.add_argument('--c3d_checkpoint', type=str, default='./datasets/models/c3d.pickle')
     # MSR_VTT
-    parser.add_argument('--msrvtt_video_root', type=str, default='./datasets/MSR-VTT/TrainValVideo/')
-    parser.add_argument('--msrvtt_anno_json_path', type=str, default='./datasets/MSR-VTT/train_val_videodatainfo.json')
+    parser.add_argument('--msrvtt_video_root', type=str, default='./datasets/msrvtt/videos/')
+    parser.add_argument('--msrvtt_anno_json_path', type=str, default='./datasets/msrvtt/train_val_videodatainfo.json')
     # MSVD
-    parser.add_argument('--msvd_video_root', type=str, default='./datasets/MSVD/youtube_videos_id')
-    parser.add_argument('--msvd_csv_path', type=str, default='./datasets/MSVD/MSR_Video_Description_Corpus.csv') # MSR_Video_Description_Corpus_refine
-    parser.add_argument('--msvd_video_name2id_map', type=str, default='./datasets/MSVD/youtube_mapping.txt')
-    parser.add_argument('--msvd_anno_json_path', type=str, default='./datasets/MSVD/annotations.json')
+    parser.add_argument('--msvd_video_root', type=str, default='./datasets/msvd/youtube_videos_id')
+    parser.add_argument('--msvd_csv_path', type=str, default='./datasets/msvd/MSR_Video_Description_Corpus.csv') # MSR_Video_Description_Corpus_refine
+    parser.add_argument('--msvd_video_name2id_map', type=str, default='./datasets/msvd/youtube_mapping.txt')
+    parser.add_argument('--msvd_anno_json_path', type=str, default='./datasets/msvd/annotations.json')
     # Output
     parser.add_argument('--feat_h5', type=str, default='output/metadata/msrvtt_resnet')
     args = parser.parse_args()
 
     msrvtt_video_sort_lambda = lambda x: int(x[5:-4])
-    args.msrvtt_train_range = (0, 6513 - 1)
-    args.msrvtt_val_range = (6512, 6512 + 2990 - 1)
-    args.msrvtt_test_range = (6512 + 2990, 6512 + 2990 + 497 - 1)
+    args.msrvtt_train_range = (0, 6512)
+    args.msrvtt_val_range = (6513, 6513 + 497 - 1)
+    args.msrvtt_test_range = (6513 + 497, 6513 + 497 + 2990 - 1)
     # msvd_video_sort_lambda = lambda x: int(x[3:-4])
     msvd_video_sort_lambda = lambda x: int(x[5:-4])
-    args.msvd_train_range = (0, 1200 - 1)
-    args.msvd_val_range = (1200, 1200 + 100 - 1)
+    args.msvd_train_range = (0, 1200)
+    args.msvd_val_range = (1200, 1200 + 100)
     args.msvd_test_range = (1300, 1300 + 470 - 1)
 
     args.video_root = args.msrvtt_video_root if args.dataset=='msrvtt' else args.msvd_video_root
@@ -129,6 +131,10 @@ def preprocess_frame(image, target_height=224, target_width=224):
     image /= np.array([0.229, 0.224, 0.225])
     return image
 
+def preprocess_frame_c3d(image, target_height=224, target_width=224):
+    image = resize_frame(image, target_height, target_width)
+    image = skimage.img_as_float(image).astype(np.float32)
+    return image
 
 def preprocess_frame_full(I, aencoder, resize):
     # handle grayscale input images
@@ -142,8 +148,7 @@ def preprocess_frame_full(I, aencoder, resize):
     fc = aencoder(I, resize)
     return fc.data.cpu().float().numpy()
 
-
-def extract_resnet_features(opt, encoder, resize=False):
+def extract_motion_features(opt, encoder, resize=False):
     # Read video list, and sort the videos according to ID
     videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
     nvideos = len(videos)
@@ -155,11 +160,34 @@ def extract_resnet_features(opt, encoder, resize=False):
         h5 = h5py.File(h5_path, 'w')
         dataset_feats = h5.create_dataset('feats', (nvideos, opt.num_frames, opt.feat_size), dtype='float32')
         dataset_lens = h5.create_dataset('lens', (nvideos,), dtype='int')
-        with tqdm(total=values[i] + 1) as pbar:
-            for i in xrange(values[i] + 1):
+        with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
+            for n in xrange(values[i][1] - values[i][0] + 1):
                 pbar.update(1)
                 video_path = os.path.join(opt.video_root, 'video' + str(i) + '.mp4')
 
+                frame_list, clip_list, frame_count = sample_frames(opt, video_path, train=True)
+                clip_list = np.array([[resize_frame(x, 112, 112) for x in clip] for clip in clip_list])
+                clip_list = clip_list.transpose(0, 4, 1, 2, 3).astype(np.float32)
+                clip_list = Variable(torch.from_numpy(clip_list), volatile=True).cuda()
+                dataset_feats[i] = encoder(clip_list)
+                dataset_lens[i] = frame_count
+
+def extract_resnet_features(opt, encoder, resize=False):
+    # Read video list, and sort the videos according to ID
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
+    nvideos = len(videos)
+    # Create hdf5 file to save video frame features
+    keys, values = ['train', 'val', 'test'], [opt.train_range, opt.val_range, opt.test_range]
+    for i in range(len(keys)):
+        h5_path = opt.feat_h5 + '2016' + '_' + keys[i] + '_' + opt.type + '.h5'
+        if os.path.exists(h5_path): os.remove(h5_path)
+        h5 = h5py.File(h5_path, 'w')
+        dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, opt.num_frames, opt.feat_size), dtype='float32')
+        dataset_lens = h5.create_dataset('lens', (values[i][1] - values[i][0] + 1,), dtype='int')
+        with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
+            for n in xrange(values[i][1] - values[i][0] + 1):
+                pbar.update(1)
+                video_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
                 frame_list, clip_list, frame_count = sample_frames(opt, video_path, train=True)
                 feats = np.zeros((opt.max_frames, opt.feat_size), dtype='float32')
                 if resize:
@@ -175,40 +203,132 @@ def extract_resnet_features(opt, encoder, resize=False):
                     af = np.array(af)
                     feats[:frame_count, :] = af
 
-                dataset_feats[i] = feats
-                dataset_lens[i] = frame_count
+                dataset_feats[n] = feats
+                dataset_lens[n] = frame_count
 
-def extract_motion_features(opt, encoder, resize=False):
+def extract_c3d_features(opt):
+    # Read video list, and sort the videos according to ID
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
+    nvideos = len(videos)
+    net = C3D(487)
+    net.load_state_dict(torch.load('misc/encoder/c3d.pickle'))
+    net.cuda()
+    net.eval()
+    feature_dim = 4096
+    opt.max_frames = 16
+    # Create hdf5 file to save video frame features
+    keys, values = ['train', 'val', 'test'], [opt.train_range, opt.val_range, opt.test_range]
+    for i in range(len(keys)):
+        h5_path = opt.feat_h5 + '2016' + '_' + keys[i] + '_' + opt.type + '.h5'
+        if os.path.exists(h5_path): os.remove(h5_path)
+        h5 = h5py.File(h5_path, 'w')
+        dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, feature_dim), dtype='float32')
+        dataset_lens = h5.create_dataset('lens', (values[i][1] - values[i][0] + 1,), dtype='int')
+        with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
+            for n in xrange(values[i][1] - values[i][0] + 1):
+                pbar.update(1)
+                video_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
+                frame_list, clip_list, frame_count = sample_frames(opt, video_path, train=True)
+                frame_list = np.array([preprocess_frame_c3d(x, target_width=112, target_height=112) for x in frame_list])
+                frame_list = Variable(torch.from_numpy(np.float32(frame_list.transpose(3, 0, 1, 2))).unsqueeze(0), volatile=True).cuda()
+                _, batch_output = net(frame_list, 6)
+                dataset_feats[n] = (batch_output.data).cpu().numpy()
+                dataset_lens[n] = opt.max_frames
+
+def _extract_c3d_features(opt):
+    # Read video list, and sort the videos according to ID
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
+    nvideos = len(videos)
+    net = C3D(487)
+    net.load_state_dict(torch.load('misc/encoder/c3d.pickle'))
+    net.cuda()
+    net.eval()
+    feature_dim = 4096
+    opt.max_frames = 16
+    # Create hdf5 file to save video frame features
+    keys, values = ['train', 'val', 'test'], [opt.train_range, opt.val_range, opt.test_range]
+    for i in range(len(keys)):
+        h5_path = opt.feat_h5 + '2016' + '_' + keys[i] + '_' + opt.type + '.h5'
+        if os.path.exists(h5_path): os.remove(h5_path)
+        h5 = h5py.File(h5_path, 'w')
+        dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, feature_dim), dtype='float32')
+        dataset_lens = h5.create_dataset('lens', (values[i][1] - values[i][0] + 1,), dtype='int')
+        with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
+            for n in xrange(values[i][1] - values[i][0] + 1):
+                pbar.update(1)
+                video_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
+                frame_list, clip_list, frame_count = sample_frames(opt, video_path, train=True)
+                clip = np.array([resize(frame, output_shape=(112, 200), preserve_range=True) for frame in frame_list])
+                clip = clip[:, :, 44:44 + 112, :]  # crop centrally
+                clip = clip.transpose(3, 0, 1, 2)  # ch, fr, h, w
+                clip = np.expand_dims(clip, axis=0)  # batch axis
+                clip = np.float32(clip)
+                #feats = np.zeros((opt.max_frames, opt.feat_size), dtype='float32')
+                #frame_list = np.array([preprocess_frame_c3d(x, target_width=112, target_height=112) for x in frame_list])
+                #frame_list = Variable(torch.from_numpy(np.float32(frame_list.transpose(3, 0, 1, 2))).unsqueeze(0), volatile=True).cuda()
+                _, batch_output = net(Variable(torch.from_numpy(clip)).cuda(), 7)
+
+                dataset_feats[n] = (batch_output.data).cpu().numpy()
+                dataset_lens[n] = opt.max_frames
+
+def extract_audio_features(opt):
+    import subprocess
+    from misc.VGGish import vggish_input
+    from misc.VGGish import vggish_params
+    from misc.VGGish import vggish_postprocess
+    from misc.VGGish import vggish_slim
+    import tensorflow as tf
+
+    # Read video list, and sort the videos according to ID
     # Read video list, and sort the videos according to ID
     videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
     nvideos = len(videos)
     # Create hdf5 file to save video frame features
-    keys, values = ['train', 'test', 'val'], [opt.train_range[1], opt.test_range[1], opt.val_range[1]]
-    for i in range(len(keys)):
-        h5_path = opt.feat_h5 + '_' + keys[i] + '_' + opt.type + '.h5'
-        if os.path.exists(h5_path): os.remove(h5_path)
-        h5 = h5py.File(h5_path, 'w')
-        dataset_feats = h5.create_dataset('feats', (nvideos, opt.num_frames, opt.feat_size), dtype='float32')
-        dataset_lens = h5.create_dataset('lens', (nvideos,), dtype='int')
-        with tqdm(total=values[i] + 1) as pbar:
-            for i in xrange(values[i] + 1):
-                pbar.update(1)
-                video_path = os.path.join(opt.video_root, 'video' + str(i) + '.mp4')
 
-                frame_list, clip_list, frame_count = sample_frames(opt, video_path, train=True)
-                clip_list = np.array([[resize_frame(x, 112, 112) for x in clip] for clip in clip_list])
-                clip_list = clip_list.transpose(0, 4, 1, 2, 3).astype(np.float32)
-                clip_list = Variable(torch.from_numpy(clip_list), volatile=True).cuda()
-                dataset_feats[i] = encoder(clip_list)
-                dataset_lens[i] = frame_count
+    with tf.Graph().as_default(), tf.Session() as sess:
+        vggish_slim.define_vggish_slim(training=False)
+        vggish_slim.load_vggish_slim_checkpoint(sess, 'misc/VGGish/vggish_model.ckpt')
+        features_tensor = sess.graph.get_tensor_by_name(vggish_params.INPUT_TENSOR_NAME)
+        embedding_tensor = sess.graph.get_tensor_by_name(vggish_params.OUTPUT_TENSOR_NAME)
+        # Create hdf5 file to save video frame features
+        keys, values = ['train', 'val', 'test'], [opt.train_range, opt.val_range, opt.test_range]
+        for i in range(len(keys)):
+            h5_path = opt.feat_h5 + '_' + keys[i] + '_' + opt.type + '.h5'
+            if os.path.exists(h5_path): os.remove(h5_path)
+            h5 = h5py.File(h5_path, 'w')
+            dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, opt.feat_size), dtype='float32')
+            #dataset_lens = h5.create_dataset('lens', (nvideos,), dtype='int')
+            with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
+                for n in xrange(values[i][1] - values[i][0] + 1):
+                    pbar.update(1)
+                    video_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
+                    if os.path.exists("tmp.wav"): os.remove("tmp.wav")
+                    cmd = "ffmpeg -i " + video_path + " -ab 160k -ac 2 -ar 44100 -vn tmp.wav"
+                    try:
+                        p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+                        p2.wait()
+                        examples_batch = vggish_input.wavfile_to_examples("tmp.wav")
+                        pproc = vggish_postprocess.Postprocessor('misc/VGGish/vggish_pca_params.npz')
+                        [embedding_batch] = sess.run([embedding_tensor], feed_dict={features_tensor: examples_batch})
+                        embedding_batch = embedding_batch.mean(0)
+                        dataset_feats[n] = embedding_batch
+                    except:
+                        print("No audio in file " + video_path)
+
 
 if __name__ == '__main__':
     opt = parse_opt()
     #build_msvd_annotation(opt)
-    if opt.type == 'renset':
+    #build_msrvtt_videos()
+
+    if opt.type == 'resnet':
         extract_resnet_features(opt, AppearanceEncoder(opt).eval().cuda())
     elif opt.type == 'motion':
         extract_motion_features(opt, MotionEncoder(opt).eval().cuda())
+    elif opt.type == 'c3d':
+        extract_c3d_features(opt)
+    elif opt.type == 'audio':
+        extract_audio_features(opt)
     else:
         print("You need select one type!")
 

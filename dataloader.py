@@ -44,16 +44,24 @@ class DataLoader():
 
         # load the json file which contains additional information about the
         # dataset
-        feat_h5_files = opt['feat_h5']
-        logger.info('DataLoader loading h5 files: %s', feat_h5_files)
-        self.feat_h5 = []
-        self.feat_dims = []
-        for ii, feat_h5_file in enumerate(feat_h5_files):
-            print("Loading feature file from {}".format(feat_h5_file))
-            self.feat_h5.append(h5py.File(feat_h5_files[ii], 'r'))
-            self.feat_dims.append(self.feat_h5[ii][self.videos[0]].shape[0])
+        self.feat_h5_files = opt['feat_h5']
+        logger.info('DataLoader loading h5 files: %s', self.feat_h5_files)
+        self.feat_h5_res = h5py.File(self.feat_h5_files[0], 'r')
+        self.feat_h5_c3d = h5py.File(self.feat_h5_files[1], 'r')
+        self.feat_h5_aud = h5py.File(self.feat_h5_files[2], 'r')
+        #self.feat_h5_cls = h5py.File(self.feat_h5_files[3], 'r')
 
-        self.num_feats = len(feat_h5_files)
+        self.feat_dims = []
+        self.feat_dim_res = self.feat_h5_res[self.videos[0]].shape[0] if 'mp1' in self.feat_h5_files[0] else self.feat_h5_res['feats'][0].shape[1]
+        self.feat_dim_c3d = self.feat_h5_c3d[self.videos[0]].shape[0] if 'mp1' in self.feat_h5_files[1] else self.feat_h5_c3d['feats'][0].shape[0]
+        self.feat_dim_aud = self.feat_h5_aud[self.videos[0]].shape[0] if 'mp1' in self.feat_h5_files[2] else self.feat_h5_aud['feats'][0].shape[0]
+        #self.feat_dim_cls = self.feat_h5_cls[self.videos[0]].shape[0]
+        self.feat_dims.append(self.feat_dim_res)
+        self.feat_dims.append(self.feat_dim_c3d)
+        self.feat_dims.append(self.feat_dim_aud)
+        #self.feat_dims.append(self.feat_dim_cls)
+
+        self.num_feats = len(self.feat_h5_files)
 
         # load in the sequence data
         if 'labels' in self.label_h5.keys():
@@ -80,17 +88,33 @@ class DataLoader():
             self.shuffle_videos()
 
     def __del__(self):
-        for f in self.feat_h5:
-            f.close()
+        self.feat_h5_res.close()
+        self.feat_h5_c3d.close()
+        self.feat_h5_aud.close()
+        #self.feat_h5_cls.close()
+
         self.label_h5.close()
 
+    def update_index(self, video_id, filename):
+        if 'train' in filename:
+            releative_id = video_id
+        if 'val' in filename:
+            releative_id = video_id - 6513
+        if 'test' in filename:
+            releative_id = video_id - 6513 - 497
+        return releative_id
+
     def get_batch(self):
+        video_batchs = []
+        video_batch_res = torch.FloatTensor(self.batch_size, self.num_chunks, 20, self.feat_dim_res).zero_()
+        video_batch_c3d = torch.FloatTensor(self.batch_size, self.num_chunks, self.feat_dim_c3d).zero_()
+        video_batch_aud = torch.FloatTensor(self.batch_size, self.num_chunks, self.feat_dim_aud).zero_()
+        #video_batch_cls = torch.FloatTensor(self.batch_size, self.num_chunks, self.feat_dim_cls).zero_()
 
-        video_batch = []
-
-        for dim in self.feat_dims:
-            feat = torch.FloatTensor(self.batch_size, self.num_chunks, dim).zero_()
-            video_batch.append(feat)
+        video_batchs.append(video_batch_res)
+        video_batchs.append(video_batch_c3d)
+        video_batchs.append(video_batch_aud)
+        #video_batchs.append(video_batch_cls)
 
         if self.has_label:
             label_batch = torch.LongTensor(self.batch_size * self.seq_per_img, self.seq_length).zero_()
@@ -105,8 +129,27 @@ class DataLoader():
             video_id = int(self.videos[idx])
             videoids_batch.append(video_id)
 
-            for jj in range(self.num_feats):
-                video_batch[jj][ii] = torch.from_numpy(np.array(self.feat_h5[jj][str(video_id)]))
+            if 'mp1' in self.feat_h5_files[0]:
+                video_batchs[0][ii] = torch.from_numpy(np.array(self.feat_h5_res[str(video_id)]))
+            else:
+                video_batchs[0][ii] = torch.from_numpy(np.array(self.feat_h5_res['feats'][self.update_index(video_id, self.feat_h5_files[0])]))
+
+            if 'mp1' in self.feat_h5_files[1]:
+                video_batchs[1][ii] = torch.from_numpy(np.array(self.feat_h5_c3d[str(video_id)]))
+            else:
+                video_batchs[1][ii] = torch.from_numpy(np.array(self.feat_h5_c3d['feats'][self.update_index(video_id, self.feat_h5_files[1])]))
+
+            if 'mp1' in self.feat_h5_files[2]:
+                video_batchs[2][ii] = torch.from_numpy(np.array(self.feat_h5_aud[str(video_id)]))
+            else:
+                video_batchs[2][ii] = torch.from_numpy(np.array(self.feat_h5_aud['feats'][self.update_index(video_id, self.feat_h5_files[2])]))
+
+            '''
+            if 'mp1' in self.feat_h5_files[3]:
+                video_batchs[3][ii] = torch.from_numpy(np.array(self.feat_h5_cls[str(video_id)]))
+            else:
+                video_batchs[3][ii] = torch.from_numpy(np.array(self.feat_h5_cls[str(video_id)]))
+            '''
 
             if self.has_label:
                 # fetch the sequence labels
@@ -149,7 +192,7 @@ class DataLoader():
                     self.shuffle_videos()
 
         data = {}
-        data['feats'] = video_batch
+        data['feats'] = video_batchs
         data['ids'] = videoids_batch
 
         if self.has_label:

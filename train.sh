@@ -13,15 +13,15 @@ func_training_xe()
                                                     --val_cocofmt_file output/metadata/${DATASET}_val_cocofmt.json \
                                                     --test_cocofmt_file output/metadata/${DATASET}_test_cocofmt.json \
                                                     --train_bcmrscores_pkl output/metadata/${DATASET}_train_evalscores.pkl \
-                                                    --train_feat_h5 output/feature/msrvtt_train_resnet_mp1.h5 \
+                                                    --train_feat_h5 output/metadata/msrvtt2016_train_resnet.h5 \
                                                                     output/feature/msrvtt_train_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_train_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_train_category_mp1.h5 \
-                                                    --val_feat_h5   output/feature/msrvtt_val_resnet_mp1.h5 \
+                                                    --val_feat_h5   output/metadata/msrvtt2016_val_resnet.h5 \
                                                                     output/feature/msrvtt_val_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_val_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_val_category_mp1.h5 \
-                                                    --test_feat_h5  output/feature/msrvtt_test_resnet_mp1.h5 \
+                                                    --test_feat_h5  output/metadata/msrvtt2016_test_resnet.h5 \
                                                                     output/feature/msrvtt_test_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_test_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_test_category_mp1.h5 \
@@ -50,15 +50,15 @@ func_training_wxe()
                                                     --val_cocofmt_file output/metadata/${DATASET}_val_cocofmt.json \
                                                     --test_cocofmt_file output/metadata/${DATASET}_test_cocofmt.json \
                                                     --train_bcmrscores_pkl output/metadata/${DATASET}_train_evalscores.pkl \
-                                                    --train_feat_h5 output/feature/msrvtt_train_resnet_mp1.h5 \
+                                                    --train_feat_h5 output/metadata/msrvtt2016_train_resnet.h5 \
                                                                     output/feature/msrvtt_train_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_train_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_train_category_mp1.h5 \
-                                                    --val_feat_h5   output/feature/msrvtt_val_resnet_mp1.h5 \
+                                                    --val_feat_h5   output/metadata/msrvtt2016_val_resnet.h5 \
                                                                     output/feature/msrvtt_val_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_val_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_val_category_mp1.h5 \
-                                                    --test_feat_h5  output/feature/msrvtt_test_resnet_mp1.h5 \
+                                                    --test_feat_h5  output/metadata/msrvtt2016_test_resnet.h5 \
                                                                     output/feature/msrvtt_test_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_test_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_test_category_mp1.h5 \
@@ -87,15 +87,15 @@ func_training_cst_ms_greedy()
                                                     --val_cocofmt_file output/metadata/${DATASET}_val_cocofmt.json \
                                                     --test_cocofmt_file output/metadata/${DATASET}_test_cocofmt.json \
                                                     --train_bcmrscores_pkl output/metadata/${DATASET}_train_evalscores.pkl \
-                                                    --train_feat_h5 output/feature/msrvtt_train_resnet_mp1.h5 \
+                                                    --train_feat_h5 output/metadata/msrvtt2016_train_resnet.h5 \
                                                                     output/feature/msrvtt_train_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_train_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_train_category_mp1.h5 \
-                                                    --val_feat_h5   output/feature/msrvtt_val_resnet_mp1.h5 \
+                                                    --val_feat_h5   output/metadata/msrvtt2016_val_resnet.h5 \
                                                                     output/feature/msrvtt_val_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_val_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_val_category_mp1.h5 \
-                                                    --test_feat_h5  output/feature/msrvtt_test_resnet_mp1.h5 \
+                                                    --test_feat_h5  output/metadata/msrvtt2016_test_resnet.h5 \
                                                                     output/feature/msrvtt_test_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_test_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_test_category_mp1.h5 \
@@ -124,15 +124,15 @@ func_training_cst_ms_scb_v1()
                                                     --val_cocofmt_file output/metadata/${DATASET}_val_cocofmt.json \
                                                     --test_cocofmt_file output/metadata/${DATASET}_test_cocofmt.json \
                                                     --train_bcmrscores_pkl output/metadata/${DATASET}_train_evalscores.pkl \
-                                                    --train_feat_h5 output/feature/msrvtt_train_resnet_mp1.h5 \
+                                                    --train_feat_h5 output/metadata/msrvtt2016_train_resnet.h5 \
                                                                     output/feature/msrvtt_train_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_train_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_train_category_mp1.h5 \
-                                                    --val_feat_h5   output/feature/msrvtt_val_resnet_mp1.h5 \
+                                                    --val_feat_h5   output/metadata/msrvtt2016_val_resnet.h5 \
                                                                     output/feature/msrvtt_val_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_val_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_val_category_mp1.h5 \
-                                                    --test_feat_h5  output/feature/msrvtt_test_resnet_mp1.h5 \
+                                                    --test_feat_h5  output/metadata/msrvtt2016_test_resnet.h5 \
                                                                     output/feature/msrvtt_test_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_test_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_test_category_mp1.h5 \
@@ -162,15 +162,15 @@ func_training_cst_ms_scb_v2()
                                                     --val_cocofmt_file output/metadata/${DATASET}_val_cocofmt.json \
                                                     --test_cocofmt_file output/metadata/${DATASET}_test_cocofmt.json \
                                                     --train_bcmrscores_pkl output/metadata/${DATASET}_train_evalscores.pkl \
-                                                    --train_feat_h5 output/feature/msrvtt_train_resnet_mp1.h5 \
+                                                    --train_feat_h5 output/metadata/msrvtt2016_train_resnet.h5 \
                                                                     output/feature/msrvtt_train_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_train_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_train_category_mp1.h5 \
-                                                    --val_feat_h5   output/feature/msrvtt_val_resnet_mp1.h5 \
+                                                    --val_feat_h5   output/metadata/msrvtt2016_val_resnet.h5 \
                                                                     output/feature/msrvtt_val_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_val_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_val_category_mp1.h5 \
-                                                    --test_feat_h5  output/feature/msrvtt_test_resnet_mp1.h5 \
+                                                    --test_feat_h5  output/metadata/msrvtt2016_test_resnet.h5 \
                                                                     output/feature/msrvtt_test_c3d_mp1.h5 \
                                                                     output/feature/msrvtt_test_mfcc_mp1.h5.vggish \
                                                                     output/feature/msrvtt_test_category_mp1.h5 \
