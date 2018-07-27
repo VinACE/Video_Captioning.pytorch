@@ -1,6 +1,6 @@
 # Video Captioning
 
-![]demo.gif)
+![](demo.gif)
 
 ## Dependencies ###
 
