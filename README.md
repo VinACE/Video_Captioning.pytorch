@@ -1,7 +1,5 @@
 # Video Captioning
 
-![](demo.gif)
-
 ## Dependencies ###
 
 * Python 2.7
