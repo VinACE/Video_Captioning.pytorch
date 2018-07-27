@@ -24,6 +24,7 @@ from misc.encoder.AppearanceEncoder import *
 from misc.encoder.MotionEncoder import *
 from misc.utils import *
 from misc.encoder.C3D import *
+from misc.saliency import *
 
 preprocess = trn.Compose([
     # trn.ToTensor(),
@@ -34,7 +35,7 @@ def parse_opt():
     parser = argparse.ArgumentParser()
     # General
     parser.add_argument('--dataset', type=str, default='msrvtt')
-    parser.add_argument('--type', type=str, default='c3d', help="[renset, motion, audio, category, c3d]")
+    parser.add_argument('--type', type=str, default='saliency', help="[renset, motion, audio, category, c3d, p3d]")
     parser.add_argument('--frame_size', type=int, default=224)   # Frame size
     # Frame
     parser.add_argument('--feat_size', type=int, default=4096) # Frame feature
@@ -74,7 +75,7 @@ def parse_opt():
     args.test_range = args.msrvtt_test_range if args.dataset == 'msrvtt' else args.msvd_test_range
     return args
 
-def sample_frames(opt, video_path, train=True):
+def _sample_frames(opt, video_path, train=True):
     try:
         cap = cv2.VideoCapture(video_path)
     except:
@@ -102,6 +103,26 @@ def sample_frames(opt, video_path, train=True):
     clip_list = np.array(clip_list)
     return frame_list, clip_list, frame_count
 
+def sample_frames(opt, video_path, train=True):
+    try:
+        cap = cv2.VideoCapture(video_path)
+    except:
+        print('Can not open %s.' % video_path)
+        pass
+
+    frame_list = []
+    frame_count = 0
+
+    while True:
+        ret, frame = cap.read()
+        if ret is False:
+            break
+        frame_list.append(frame)
+        frame_count += 1
+
+    indices = np.linspace(0, frame_count, opt.max_frames, endpoint=False, dtype=int)
+    frame_list = np.array(frame_list)[indices]
+    return frame_list, frame_count
 
 def resize_frame(image, target_height=224, target_width=224):
     if len(image.shape) == 2:
@@ -148,30 +169,6 @@ def preprocess_frame_full(I, aencoder, resize):
     fc = aencoder(I, resize)
     return fc.data.cpu().float().numpy()
 
-def extract_motion_features(opt, encoder, resize=False):
-    # Read video list, and sort the videos according to ID
-    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
-    nvideos = len(videos)
-    # Create hdf5 file to save video frame features
-    keys, values = ['train', 'test', 'val'], [opt.train_range[1], opt.test_range[1], opt.val_range[1]]
-    for i in range(len(keys)):
-        h5_path = opt.feat_h5 + '_' + keys[i] + '_' + opt.type + '.h5'
-        if os.path.exists(h5_path): os.remove(h5_path)
-        h5 = h5py.File(h5_path, 'w')
-        dataset_feats = h5.create_dataset('feats', (nvideos, opt.num_frames, opt.feat_size), dtype='float32')
-        dataset_lens = h5.create_dataset('lens', (nvideos,), dtype='int')
-        with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
-            for n in xrange(values[i][1] - values[i][0] + 1):
-                pbar.update(1)
-                video_path = os.path.join(opt.video_root, 'video' + str(i) + '.mp4')
-
-                frame_list, clip_list, frame_count = sample_frames(opt, video_path, train=True)
-                clip_list = np.array([[resize_frame(x, 112, 112) for x in clip] for clip in clip_list])
-                clip_list = clip_list.transpose(0, 4, 1, 2, 3).astype(np.float32)
-                clip_list = Variable(torch.from_numpy(clip_list), volatile=True).cuda()
-                dataset_feats[i] = encoder(clip_list)
-                dataset_lens[i] = frame_count
-
 def extract_resnet_features(opt, encoder, resize=False):
     # Read video list, and sort the videos according to ID
     videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
@@ -188,7 +185,7 @@ def extract_resnet_features(opt, encoder, resize=False):
             for n in xrange(values[i][1] - values[i][0] + 1):
                 pbar.update(1)
                 video_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
-                frame_list, clip_list, frame_count = sample_frames(opt, video_path, train=True)
+                frame_list,  frame_count = sample_frames(opt, video_path, train=True)
                 feats = np.zeros((opt.max_frames, opt.feat_size), dtype='float32')
                 if resize:
                     frame_list = np.array([preprocess_frame(x) for x in frame_list])
@@ -206,7 +203,156 @@ def extract_resnet_features(opt, encoder, resize=False):
                 dataset_feats[n] = feats
                 dataset_lens[n] = frame_count
 
-def extract_c3d_features(opt):
+def extract_c3d_features_v1(opt):
+    import skvideo.io
+    from misc.c3d_keras import C3D_Keras
+    from keras.models import Model
+    from misc.sports1M_utils import preprocess_input, decode_predictions
+
+    base_model = C3D_Keras(weights='sports1M')
+    model = Model(inputs=base_model.input, outputs=base_model.get_layer('fc6').output)
+
+    # Read video list, and sort the videos according to ID
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
+    nvideos = len(videos)
+    feature_dim = 4096
+    opt.max_frames = 16
+    # Create hdf5 file to save video frame features
+    keys, values = ['train', 'val', 'test'], [opt.train_range, opt.val_range, opt.test_range]
+    for i in range(len(keys)):
+        h5_path = opt.feat_h5 + '2016' + '_' + keys[i] + '_' + opt.type + '_v1.h5'
+        if os.path.exists(h5_path): os.remove(h5_path)
+        h5 = h5py.File(h5_path, 'w')
+        dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, feature_dim), dtype='float32')
+        dataset_lens = h5.create_dataset('lens', (values[i][1] - values[i][0] + 1,), dtype='int')
+        with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
+            for n in xrange(values[i][1] - values[i][0] + 1):
+                pbar.update(1)
+                vid_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
+                vid = skvideo.io.vread(vid_path)
+                indices = np.linspace(0, vid.shape[0], opt.num_frames, endpoint=False, dtype=int)
+                frame_list = np.array(vid)[indices]
+                x = preprocess_input(frame_list)
+                features = model.predict(x)
+                dataset_feats[n] = features
+                dataset_lens[n] = opt.max_frames
+
+def extract_c3d_features_v2(opt):
+    # Read video list, and sort the videos according to ID
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
+    nvideos = len(videos)
+    from misc.c3d_keras import C3D_Keras
+    from keras.models import Model
+    from misc.sports1M_utils import preprocess_input, decode_predictions
+
+    base_model = C3D_Keras(weights='sports1M')
+    model = Model(inputs=base_model.input, outputs=base_model.get_layer('fc6').output)
+    feature_dim = 4096
+    opt.max_frames = 16
+    # Create hdf5 file to save video frame features
+    keys, values = ['train', 'val', 'test'], [opt.train_range, opt.val_range, opt.test_range]
+    for i in range(len(keys)):
+        h5_path = opt.feat_h5 + '2016' + '_' + keys[i] + '_' + opt.type + '_v2.h5'
+        if os.path.exists(h5_path): os.remove(h5_path)
+        h5 = h5py.File(h5_path, 'w')
+        dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, feature_dim), dtype='float32')
+        dataset_lens = h5.create_dataset('lens', (values[i][1] - values[i][0] + 1,), dtype='int')
+        with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
+            for n in xrange(values[i][1] - values[i][0] + 1):
+                pbar.update(1)
+                video_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
+                frame_list, frame_count = sample_frames(opt, video_path, train=True)
+                clip = np.array([resize(frame, output_shape=(112, 200), preserve_range=True) for frame in frame_list])
+                clip = clip[:, :, 44:44 + 112, :]  # crop centrally
+                clip = clip.transpose(3, 0, 1, 2)  # ch, fr, h, w
+                clip = np.expand_dims(clip, axis=0)  # batch axis
+                clip = np.float32(clip)
+                #feats = np.zeros((opt.max_frames, opt.feat_size), dtype='float32')
+                #frame_list = np.array([preprocess_frame_c3d(x, target_width=112, target_height=112) for x in frame_list])
+                #frame_list = Variable(torch.from_numpy(np.float32(frame_list.transpose(3, 0, 1, 2))).unsqueeze(0), volatile=True).cuda()
+                features = model.predict(np.transpose(clip, (0, 2, 3, 4, 1)))
+                dataset_feats[n] = features
+                dataset_lens[n] = opt.max_frames
+
+def extract_c3d_features_v3(opt):
+    import skvideo.io
+    from misc.c3d_keras import C3D_Keras
+    from keras.models import Model
+    from misc.sports1M_utils import preprocess_input, decode_predictions
+
+    base_model = C3D_Keras(weights='sports1M')
+    model = Model(inputs=base_model.input, outputs=base_model.get_layer('fc6').output)
+
+    # Read video list, and sort the videos according to ID
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
+    nvideos = len(videos)
+    feature_dim = 4096
+    opt.max_frames = 16
+    # Create hdf5 file to save video frame features
+    keys, values = ['train', 'val', 'test'], [opt.train_range, opt.val_range, opt.test_range]
+    for i in range(len(keys)):
+        h5_path = opt.feat_h5 + '2016' + '_' + keys[i] + '_' + opt.type + '_v3.h5'
+        if os.path.exists(h5_path): os.remove(h5_path)
+        h5 = h5py.File(h5_path, 'w')
+        dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, feature_dim), dtype='float32')
+        dataset_lens = h5.create_dataset('lens', (values[i][1] - values[i][0] + 1,), dtype='int')
+        with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
+            for n in xrange(values[i][1] - values[i][0] + 1):
+                pbar.update(1)
+                vid_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
+                vid = skvideo.io.vread(vid_path)
+                window_size = 16
+                clip_feats = []
+                for k in xrange(int(len(vid)/window_size)):
+                    index = k*16 + 8
+                    if index > len(vid):
+                        break
+                    clip = vid[index - 8: index + 8]
+                    x = preprocess_input(clip)
+                    features = model.predict(x)
+                    clip_feats.append(features)
+                dataset_feats[n] = np.asarray(clip_feats).mean(0)
+                dataset_lens[n] = opt.max_frames
+
+def extract_p3d_features_v3(opt):
+    import skvideo.io
+    from misc.p3d.p3d_model import *
+    model = P3D199(pretrained=True, modality='RGB').cuda()
+    model.eval()
+    # Read video list, and sort the videos according to ID
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
+    nvideos = len(videos)
+    feature_dim = 2048
+    opt.max_frames = 16
+    # Create hdf5 file to save video frame features
+    keys, values = ['train', 'val', 'test'], [opt.train_range, opt.val_range, opt.test_range]
+    for i in range(len(keys)):
+        h5_path = opt.feat_h5 + '2016' + '_' + keys[i] + '_' + opt.type + '_v3.h5'
+        if os.path.exists(h5_path): os.remove(h5_path)
+        h5 = h5py.File(h5_path, 'w')
+        dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, feature_dim), dtype='float32')
+        dataset_lens = h5.create_dataset('lens', (values[i][1] - values[i][0] + 1,), dtype='int')
+        with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
+            for n in xrange(values[i][1] - values[i][0] + 1):
+                pbar.update(1)
+                vid_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
+                vid = skvideo.io.vread(vid_path)
+                window_size = 16
+                clip_feats = []
+                clip_frame = []
+                for k in xrange(int(len(vid)/window_size)):
+                    index = k*16 + 8
+                    if index > len(vid):
+                        break
+                    clip = vid[index - 8: index + 8]
+                    x = np.array([resize(frame, output_shape=(160, 160), preserve_range=True) for frame in clip])
+                    clip_frame.append(x)
+                data = Variable(torch.from_numpy(np.transpose(np.asarray(clip_frame), (0, 4, 1, 2, 3))), volatile=True).cuda()
+                out, fc = model(data.float())
+                dataset_feats[n] = (fc.mean(0).data).cpu().numpy()
+                dataset_lens[n] = opt.max_frames
+
+def __extract_c3d_features(opt):
     # Read video list, and sort the videos according to ID
     videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
     nvideos = len(videos)
@@ -228,7 +374,7 @@ def extract_c3d_features(opt):
             for n in xrange(values[i][1] - values[i][0] + 1):
                 pbar.update(1)
                 video_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
-                frame_list, clip_list, frame_count = sample_frames(opt, video_path, train=True)
+                frame_list, frame_count = sample_frames(opt, video_path, train=True)
                 frame_list = np.array([preprocess_frame_c3d(x, target_width=112, target_height=112) for x in frame_list])
                 frame_list = Variable(torch.from_numpy(np.float32(frame_list.transpose(3, 0, 1, 2))).unsqueeze(0), volatile=True).cuda()
                 _, batch_output = net(frame_list, 6)
@@ -257,7 +403,7 @@ def _extract_c3d_features(opt):
             for n in xrange(values[i][1] - values[i][0] + 1):
                 pbar.update(1)
                 video_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
-                frame_list, clip_list, frame_count = sample_frames(opt, video_path, train=True)
+                frame_list, frame_count = sample_frames(opt, video_path, train=True)
                 clip = np.array([resize(frame, output_shape=(112, 200), preserve_range=True) for frame in frame_list])
                 clip = clip[:, :, 44:44 + 112, :]  # crop centrally
                 clip = clip.transpose(3, 0, 1, 2)  # ch, fr, h, w
@@ -323,10 +469,10 @@ if __name__ == '__main__':
 
     if opt.type == 'resnet':
         extract_resnet_features(opt, AppearanceEncoder(opt).eval().cuda())
-    elif opt.type == 'motion':
-        extract_motion_features(opt, MotionEncoder(opt).eval().cuda())
     elif opt.type == 'c3d':
-        extract_c3d_features(opt)
+        extract_c3d_features_v3(opt)
+    elif opt.type == 'p3d':
+        extract_p3d_features_v3(opt)
     elif opt.type == 'audio':
         extract_audio_features(opt)
     else:
