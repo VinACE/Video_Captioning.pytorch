@@ -1,5 +1,7 @@
 # Video Captioning
 
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/Mc_31ZPRm9g/0.jpg)](https://www.youtube.com/watch?v=Mc_31ZPRm9g)
+
 ## Dependencies ###
 
 * Python 2.7
