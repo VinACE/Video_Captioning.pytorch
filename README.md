@@ -28,18 +28,7 @@
 [test_videos.zip](http://202.38.69.241/static/resource/test_videos.zip),
 [test_videodatainfo.json](http://ms-multimedia-challenge.com/static/resource/test_videodatainfo.json)
 
-##### Pre-processed
-
-Data can be downloaded [here](https://drive.google.com/drive/folders/1t65uYsDck6VV045GIaJXPIqL86vSGtyQ?usp=sharing) (643 MB). This folder contains: 
-* input/msrvtt: annotatated captions (note that `val_videodatainfo.json` is a symbolic link to `train_videodatainfo.json`)
-* output/feature: extracted features
-* output/model/cst_best: model file and generated captions on test videos of our best run (CIDEr 54.2) 
-
 ## Getting started ###
-
-Extract video features
-  - Extracted features of ResNet, C3D, MFCC and Category embeddings are shared in the above link
-
 Generate metadata
 
 1. run `func_standalize_format`
@@ -51,18 +40,16 @@ Generate metadata
 7. run `func_compute_evalscores` # Pre-compute evaluation scores (BLEU_4, CIDEr, METEOR, ROUGE_L) for each caption
 8. run `func_extract_video_features` # extract video features
 
-Please refer to the `opts.py` file for the set of available train/test options
 
 ### Training
 
+![](curve.png)
+
+Please refer to the `opts.py` file for the set of available train/test options
 ```bash
 # Train XE model
 ./train.sh 0 [GPUIDs]
 ```
-
-##### Currently, the c3d feature seems not working (orange), but resnet and audio works and category features seems useless.
-![](output/curve.png)
-
 ```bash
 # Train CST_GT_None/WXE model
 ./train.sh 1 [GPUIDs]
@@ -77,8 +64,6 @@ Please refer to the `opts.py` file for the set of available train/test options
 # Train CST_MS_SCB model (using SCB baseline, where SCB is computed from GT captions)
 ./train.sh 3 [GPUIDs]
 ```
-
-
 
 ```bash
 #Train CST_MS_SCB(*) model (using SCB baseline, where SCB is computed from model sampled captions)
