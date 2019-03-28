@@ -469,6 +469,7 @@ def extract_audio_features(opt):
 
 if __name__ == '__main__':
     opt = parse_opt()
+    
     #build_msvd_annotation(opt)
     #build_msrvtt_videos()
 
