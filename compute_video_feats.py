@@ -44,7 +44,7 @@ def parse_opt():
     parser.add_argument('--max_frames', type=int, default=20)  # Number of frames
     parser.add_argument('--num_frames', type=int, default=20)  # Number of frames
     # Models
-    parser.add_argument('--resnet_checkpoint', type=str, default='./misc/encoder/pytorch-resnet/resnet101.pth')
+    parser.add_argument('--resnet_checkpoint', type=str, default='/content/Video_Captioning.pytorch/misc/encoder/pytorch-resnet/resnet101.pth')
     parser.add_argument('--c3d_checkpoint', type=str, default='./datasets/models/c3d.pickle')
     # MSR_VTT
     parser.add_argument('--msrvtt_video_root', type=str, default='./datasets/msrvtt/videos/')
