@@ -34,6 +34,7 @@ preprocess = trn.Compose([
 ])
 
 def parse_opt():
+    pdb.set_trace()
     parser = argparse.ArgumentParser()
     # General
     parser.add_argument('--dataset', type=str, default='msrvtt')
