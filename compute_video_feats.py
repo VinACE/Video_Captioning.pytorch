@@ -25,6 +25,7 @@ from misc.encoder.MotionEncoder import *
 from misc.utils import *
 from misc.encoder.C3D import *
 from misc.saliency import *
+from misc.p3d.p3d_model import *
 
 preprocess = trn.Compose([
     # trn.ToTensor(),
@@ -316,7 +317,7 @@ def extract_c3d_features_v3(opt):
 
 def extract_p3d_features_v3(opt):
     import skvideo.io
-    from misc.p3d.p3d_model import *
+    # from misc.p3d.p3d_model import *
     model = P3D199(pretrained=True, modality='RGB').cuda()
     model.eval()
     # Read video list, and sort the videos according to ID
