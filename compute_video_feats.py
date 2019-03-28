@@ -47,7 +47,7 @@ def parse_opt():
     parser.add_argument('--resnet_checkpoint', type=str, default='/content/Video_Captioning.pytorch/misc/encoder/pytorch-resnet/resnet101-5d3b4d8f.pth')
     parser.add_argument('--c3d_checkpoint', type=str, default='./datasets/models/c3d.pickle')
     # MSR_VTT
-    parser.add_argument('--msrvtt_video_root', type=str, default='./datasets/msrvtt/videos/')
+    parser.add_argument('--msrvtt_video_root', type=str, default='/content/Video_Captioning.pytorch/datasets/msrvtt/videos/')
     parser.add_argument('--msrvtt_anno_json_path', type=str, default='./datasets/msrvtt/train_val_videodatainfo.json')
     # MSVD
     parser.add_argument('--msvd_video_root', type=str, default='./datasets/msvd/youtube_videos_id')
