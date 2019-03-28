@@ -55,7 +55,7 @@ def parse_opt():
     parser.add_argument('--msvd_video_name2id_map', type=str, default='./datasets/msvd/youtube_mapping.txt')
     parser.add_argument('--msvd_anno_json_path', type=str, default='./datasets/msvd/annotations.json')
     # Output
-    parser.add_argument('--feat_h5', type=str, default='output/metadata/msrvtt_resnet')
+    parser.add_argument('--feat_h5', type=str, default='./output/metadata/msrvtt_resnet')
     args = parser.parse_args()
 
     msrvtt_video_sort_lambda = lambda x: int(x[5:-4])
@@ -64,9 +64,13 @@ def parse_opt():
     args.msrvtt_test_range = (6513 + 497, 6513 + 497 + 2990 - 1)
     # msvd_video_sort_lambda = lambda x: int(x[3:-4])
     msvd_video_sort_lambda = lambda x: int(x[5:-4])
-    args.msvd_train_range = (0, 1200)
-    args.msvd_val_range = (1200, 1200 + 100)
-    args.msvd_test_range = (1300, 1300 + 470 - 1)
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
+
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
+
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
+
+    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
 
     args.video_root = args.msrvtt_video_root if args.dataset=='msrvtt' else args.msvd_video_root
     args.video_sort_lambda = msrvtt_video_sort_lambda if args.dataset == 'msrvtt' else msvd_video_sort_lambda
