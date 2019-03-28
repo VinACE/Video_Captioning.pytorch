@@ -67,6 +67,7 @@ def parse_opt():
     args.msvd_train_range = (0, 1200)	67	    videos = sorted(os.listdir(opt.video_root), key=opt.video_sort_lambda)
 	args.msvd_val_range = (1200, 1200 + 100)	68	
 	args.msvd_test_range = (1300, 1300 + 470 - 1)
+    
 
     args.video_root = args.msrvtt_video_root if args.dataset=='msrvtt' else args.msvd_video_root
     args.video_sort_lambda = msrvtt_video_sort_lambda if args.dataset == 'msrvtt' else msvd_video_sort_lambda
