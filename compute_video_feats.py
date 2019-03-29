@@ -105,7 +105,7 @@ def _sample_frames(opt, video_path, train=True):
     return frame_list, clip_list, frame_count
 
 def sample_frames(opt, video_path, train=True):
-    pdb.set_trace()
+    # pdb.set_trace()
     try:
         cap = cv2.VideoCapture(video_path)
     except:
