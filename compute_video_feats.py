@@ -31,7 +31,7 @@ from misc.p3d.p3d_model import *
 preprocess = trn.Compose([
     # trn.ToTensor(),
     trn.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-])
+]).cuda()
 
 def parse_opt():
     parser = argparse.ArgumentParser()
