@@ -56,7 +56,7 @@ def parse_opt():
     parser.add_argument('--msvd_video_name2id_map', type=str, default='./datasets/msvd/youtube_mapping.txt')
     parser.add_argument('--msvd_anno_json_path', type=str, default='./datasets/msvd/annotations.json')
     # Output
-    parser.add_argument('--feat_h5', type=str, default='/content/output/metadata/msrvtt_resnet')
+    parser.add_argument('--feat_h5', type=str, default='/content/Video_Captioning.pytorch/output/metadata')
     args = parser.parse_args()
     print(args)    
     msrvtt_video_sort_lambda = lambda x: int(x[5:-4])
