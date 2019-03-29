@@ -168,7 +168,7 @@ def preprocess_frame_full(I, aencoder, resize):
     I = I.astype('float32') / 255.0
     # I = torch.from_numpy(I.transpose([2, 0, 1])).cuda()
     pdb.set_trace()
-    I = torch.from_numpy(I.transpose([2, 0, 1])).cuda()
+    I = torch.from_numpy(I.transpose([2, 0, 1]))
     I = Variable(preprocess(I), volatile=True).cuda()
     fc = aencoder(I, resize)
     return fc.data.cpu().float().numpy()
