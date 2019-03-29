@@ -179,14 +179,14 @@ def extract_resnet_features(opt, encoder, resize=False):
     nvideos = len(videos)
     # Create hdf5 file to save video frame features
     keys, values = ['train', 'val', 'test'], [opt.train_range, opt.val_range, opt.test_range]
-    for i in xrange(len(keys)):
+    for i in range(len(keys)):
         h5_path = opt.feat_h5 + '2016' + '_' + keys[i] + '_' + opt.type + '.h5'
         if os.path.exists(h5_path): os.remove(h5_path)
         h5 = h5py.File(h5_path, 'w')
         dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, opt.num_frames, opt.feat_size), dtype='float32')
         dataset_lens = h5.create_dataset('lens', (values[i][1] - values[i][0] + 1,), dtype='int')
         with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
-            for n in xrange(values[i][1] - values[i][0] + 1):
+            for n in range(values[i][1] - values[i][0] + 1):
                 pbar.update(1)
                 video_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
                 frame_list,  frame_count = sample_frames(opt, video_path, train=True)
