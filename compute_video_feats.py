@@ -58,7 +58,7 @@ def parse_opt():
     # Output
     parser.add_argument('--feat_h5', type=str, default='/content/Video_Captioning.pytorch/output/metadata')
     args = parser.parse_args()
-    pd.set_trace()
+    # pd.set_trace()
     msrvtt_video_sort_lambda = lambda x: int(x[5:-4])
     args.msrvtt_train_range = (0, 6512)
     args.msrvtt_val_range = (6513, 6513 + 497 - 1)
@@ -115,10 +115,10 @@ def sample_frames(opt, video_path, train=True):
     frame_count = 0
 
     while True:
-        ret, frame = cap.read()
-        if ret is False:
-            break
-        frame_list.append(frame)
+     line 61   ret, frame = cap.read()
+     line 61   if ret is False:
+     line 61       break
+     line 61   frame_list.append(frame)
         frame_count += 1
 
     indices = np.linspace(0, frame_count, opt.max_frames, endpoint=False, dtype=int)
