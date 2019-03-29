@@ -183,7 +183,7 @@ def extract_resnet_features(opt, encoder, resize=False):
         dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, opt.num_frames, opt.feat_size), dtype='float32')
         dataset_lens = h5.create_dataset('lens', (values[i][1] - values[i][0] + 1,), dtype='int')
         with tqdm(total=values[i][1] - values[i][0] + 1) as pbar:
-            for n in xrange(values[i][1] - values[i][0] + 1):
+            for n in range(values[i][1] - values[i][0] + 1):
                 pbar.update(1)
                 video_path = os.path.join(opt.video_root, 'video' + str(n + values[i][0]) + '.mp4')
                 frame_list,  frame_count = sample_frames(opt, video_path, train=True)
