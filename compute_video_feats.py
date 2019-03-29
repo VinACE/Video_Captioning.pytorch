@@ -58,7 +58,7 @@ def parse_opt():
     # Output
     parser.add_argument('--feat_h5', type=str, default='/content/output/metadata/msrvtt_resnet')
     args = parser.parse_args()
-
+    print(args)    
     msrvtt_video_sort_lambda = lambda x: int(x[5:-4])
     args.msrvtt_train_range = (0, 6512)
     args.msrvtt_val_range = (6513, 6513 + 497 - 1)
