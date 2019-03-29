@@ -180,7 +180,7 @@ def extract_resnet_features(opt, encoder, resize=False):
     # Create hdf5 file to save video frame features
     keys, values = ['train', 'val', 'test'], [opt.train_range, opt.val_range, opt.test_range]
     for i in range(len(keys)):
-        h5_path = opt.feat_h5 + '2016' + '_' + keys[i] + '_' + opt.type + '.h5'
+        h5_path = opt.feat_h5 + '2019' + '_' + keys[i] + '_' + opt.type + '.h5'
         if os.path.exists(h5_path): os.remove(h5_path)
         h5 = h5py.File(h5_path, 'w')
         dataset_feats = h5.create_dataset('feats', (values[i][1] - values[i][0] + 1, opt.num_frames, opt.feat_size), dtype='float32')
